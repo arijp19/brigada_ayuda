@@ -246,10 +246,37 @@ textarea{resize:vertical;min-height:58px;}
 
 .empty{text-align:center;color:var(--gris);padding:40px 16px;font-size:.95rem;}
 
+/* ── VERSÍCULO TOAST ─────────────────────────────────────── */
+.versiculo-toast{
+  display:none;
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#1a1a1a,#2a2200);
+  color:#fff;border:2px solid var(--dorado);border-radius:16px;
+  padding:18px 24px;max-width:420px;width:calc(100% - 32px);
+  box-shadow:0 8px 32px rgba(0,0,0,.35);z-index:999;
+  text-align:center;animation:slideUp .4s ease;
+}
+.versiculo-toast.show{display:block;}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.versiculo-toast .corona{font-size:1.6rem;margin-bottom:6px;}
+.versiculo-toast .verso{font-size:.92rem;font-style:italic;line-height:1.5;margin-bottom:6px;opacity:.95;}
+.versiculo-toast .ref{font-size:.75rem;color:var(--dorado);font-weight:700;letter-spacing:.5px;}
+
 footer{
   text-align:center;color:var(--gris);font-size:.78rem;
-  padding:24px 16px;border-top:1px solid var(--borde);margin-top:10px;
+  padding:28px 16px 20px;border-top:1px solid var(--borde);margin-top:10px;
 }
+.footer-redes{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px;}
+.footer-redes a{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:20px;font-size:.82rem;font-weight:600;
+  text-decoration:none;transition:filter .15s;
+}
+.footer-redes a:hover{filter:brightness(.88);}
+.link-web{background:#1a1a1a;color:var(--dorado);border:1px solid var(--dorado);}
+.link-ig {background:#c13584;color:#fff;}
+.link-fb {background:#1877f2;color:#fff;}
+.footer-copy{font-size:.75rem;color:var(--gris);}
 
 /* ── RESPONSIVE ─────────────────────────────────────────── */
 @media(max-width:820px){
@@ -411,7 +438,21 @@ footer{
   </div>
 </div>
 
-<footer>Hecho con cariño 💙 · Brigada de Ayuda y Esperanza · Iglesia Rey de Reyes · Coro, Estado Falcón</footer>
+<!-- Toast versículo -->
+<div class="versiculo-toast" id="versiculoToast">
+  <div class="corona">👑</div>
+  <div class="verso">"A Jehová presta el que da al pobre,<br>Y el bien que ha hecho, se lo volverá a pagar."</div>
+  <div class="ref">— Proverbios 19:17</div>
+</div>
+
+<footer>
+  <div class="footer-redes">
+    <a class="link-web" href="https://rey-de-reyes.netlify.app/" target="_blank" rel="noopener">🌐 rey-de-reyes.netlify.app</a>
+    <a class="link-ig"  href="https://www.instagram.com/reydereyesve" target="_blank" rel="noopener">📸 @reydereyesve</a>
+    <a class="link-fb"  href="https://www.facebook.com/ReydereyesCentral" target="_blank" rel="noopener">👍 ReydereyesCentral</a>
+  </div>
+  <div class="footer-copy">Brigada de Ayuda y Esperanza · Iglesia Rey de Reyes · Coro, Estado Falcón</div>
+</footer>
 
 <script>
 const API = "/api/registros";
@@ -593,9 +634,11 @@ $("det-eliminar").addEventListener("click", () => {
 
 /* ── MODAL AYUDA ────────────────────────────────────────── */
 async function ejecutarMarca(ayudadoPor) {
-  await fetch(API, { method:"POST", headers:{"Content-Type":"application/json"},
+  const res = await fetch(API, { method:"POST", headers:{"Content-Type":"application/json"},
     body: JSON.stringify({ action:"help", id: _ayudaId, ayudadoPor }) });
+  const r = await res.json();
   _ayudaId = null;
+  if (r.ayudado) mostrarVersiculo();
   await cargar();
 }
 
@@ -649,6 +692,7 @@ $("form").addEventListener("submit", async e => {
     $("form").reset();
     ["c-h","c-m","c-ni","c-na","c-a"].forEach(id => $(id).value = 0);
     mostrarMsg("formMsg", "✓ Registro guardado correctamente.", "ok");
+    mostrarVersiculo();
     await cargar();
   } catch {
     mostrarMsg("formMsg", "Error al guardar. Intenta de nuevo.", "err");
@@ -661,6 +705,14 @@ function mostrarMsg(elId, txt, tipo) {
   const el = $(elId);
   el.textContent = txt; el.className = "msg " + tipo;
   setTimeout(() => { el.className = "msg"; }, 4000);
+}
+
+let _toastTimer = null;
+function mostrarVersiculo() {
+  const t = $("versiculoToast");
+  t.classList.add("show");
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove("show"), 5000);
 }
 
 document.querySelectorAll(".tab").forEach(b =>
