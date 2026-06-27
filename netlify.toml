@@ -1,0 +1,9 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+# Redirige las peticiones de datos a la función del servidor
+[[redirects]]
+  from = "/api/registros"
+  to = "/.netlify/functions/registros"
+  status = 200

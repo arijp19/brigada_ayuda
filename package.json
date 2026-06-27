@@ -1,0 +1,9 @@
+{
+  "name": "ayuda-brigada",
+  "version": "1.0.0",
+  "description": "Registro de personas que llegan desde Caracas para coordinar ayuda",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
