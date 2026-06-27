@@ -246,21 +246,47 @@ textarea{resize:vertical;min-height:58px;}
 
 .empty{text-align:center;color:var(--gris);padding:40px 16px;font-size:.95rem;}
 
-/* ── VERSÍCULO TOAST ─────────────────────────────────────── */
-.versiculo-toast{
-  display:none;
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
-  background:linear-gradient(135deg,#1a1a1a,#2a2200);
-  color:#fff;border:2px solid var(--dorado);border-radius:16px;
-  padding:18px 24px;max-width:420px;width:calc(100% - 32px);
-  box-shadow:0 8px 32px rgba(0,0,0,.35);z-index:999;
-  text-align:center;animation:slideUp .4s ease;
+/* ── VERSÍCULO OVERLAY ───────────────────────────────────── */
+.versiculo-bg{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.65);z-index:999;
+  align-items:center;justify-content:center;
+  padding:16px;backdrop-filter:blur(3px);
 }
-.versiculo-toast.show{display:block;}
-@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-.versiculo-toast .corona{font-size:1.6rem;margin-bottom:6px;}
-.versiculo-toast .verso{font-size:.92rem;font-style:italic;line-height:1.5;margin-bottom:6px;opacity:.95;}
-.versiculo-toast .ref{font-size:.75rem;color:var(--dorado);font-weight:700;letter-spacing:.5px;}
+.versiculo-bg.show{display:flex;}
+.versiculo-toast{
+  background:linear-gradient(160deg,#1a1a1a 0%,#2e1e00 100%);
+  color:#fff;border:2px solid var(--dorado);border-radius:20px;
+  padding:32px 28px;max-width:440px;width:100%;
+  box-shadow:0 16px 48px rgba(0,0,0,.5);
+  text-align:center;animation:popIn .35s ease;
+}
+@keyframes popIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+.versiculo-toast .corona{font-size:2.2rem;margin-bottom:10px;}
+.versiculo-toast .verso{
+  font-size:1rem;font-style:italic;line-height:1.7;
+  margin-bottom:10px;opacity:.95;
+}
+.versiculo-toast .ref{
+  font-size:.8rem;color:var(--dorado);font-weight:700;
+  letter-spacing:.6px;margin-bottom:18px;
+}
+.versiculo-toast .iglesia-link{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(200,155,36,.15);border:1px solid var(--dorado);
+  color:var(--dorado);text-decoration:none;
+  padding:9px 18px;border-radius:24px;font-size:.85rem;font-weight:700;
+  transition:background .15s;margin-bottom:16px;
+}
+.versiculo-toast .iglesia-link:hover{background:rgba(200,155,36,.28);}
+.versiculo-toast .cerrar-btn{
+  display:block;width:100%;padding:10px;
+  background:transparent;border:1px solid rgba(255,255,255,.25);
+  color:rgba(255,255,255,.7);border-radius:10px;
+  font-size:.85rem;cursor:pointer;font-family:inherit;
+  transition:all .15s;
+}
+.versiculo-toast .cerrar-btn:hover{background:rgba(255,255,255,.1);color:#fff;}
 
 footer{
   text-align:center;color:var(--gris);font-size:.78rem;
@@ -438,11 +464,17 @@ footer{
   </div>
 </div>
 
-<!-- Toast versículo -->
-<div class="versiculo-toast" id="versiculoToast">
-  <div class="corona">👑</div>
-  <div class="verso">"A Jehová presta el que da al pobre,<br>Y el bien que ha hecho, se lo volverá a pagar."</div>
-  <div class="ref">— Proverbios 19:17</div>
+<!-- Versículo centrado -->
+<div class="versiculo-bg" id="versiculoBg">
+  <div class="versiculo-toast">
+    <div class="corona">👑</div>
+    <div class="verso">"A Jehová presta el que da al pobre,<br>Y el bien que ha hecho, se lo volverá a pagar."</div>
+    <div class="ref">— Proverbios 19:17</div>
+    <a class="iglesia-link" href="https://rey-de-reyes.netlify.app/" target="_blank" rel="noopener">
+      🌐 Visita nuestra página web
+    </a>
+    <button class="cerrar-btn" id="versiculoCerrar">Cerrar</button>
+  </div>
 </div>
 
 <footer>
@@ -707,13 +739,13 @@ function mostrarMsg(elId, txt, tipo) {
   setTimeout(() => { el.className = "msg"; }, 4000);
 }
 
-let _toastTimer = null;
 function mostrarVersiculo() {
-  const t = $("versiculoToast");
-  t.classList.add("show");
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => t.classList.remove("show"), 5000);
+  $("versiculoBg").classList.add("show");
 }
+$("versiculoCerrar").addEventListener("click", () => $("versiculoBg").classList.remove("show"));
+$("versiculoBg").addEventListener("click", e => {
+  if (e.target === $("versiculoBg")) $("versiculoBg").classList.remove("show");
+});
 
 document.querySelectorAll(".tab").forEach(b =>
   b.addEventListener("click", () => {
