@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Registro · Brigada de Ayuda y Esperanza</title>
 <link rel="icon" type="image/jpeg" href="src/photo_2026-06-27_18-30-51.jpg" />
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
 :root {
   --dorado: #c89b24;
@@ -151,6 +152,8 @@ textarea{resize:vertical;min-height:58px;}
 .btn-danger:hover{filter:brightness(.9);}
 .btn-ghost{background:var(--gris-cl);color:var(--txt);}
 .btn-ghost:hover{filter:brightness(.96);}
+.btn-excel{background:#1d6f42;color:#fff;white-space:nowrap;}
+.btn-excel:hover{filter:brightness(.9);}
 
 /* ── TOOLBAR ────────────────────────────────────────────── */
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;}
@@ -354,6 +357,7 @@ footer{
           <button class="tab" data-f="pendientes">Pendientes</button>
           <button class="tab" data-f="ayudados">Ayudados</button>
         </div>
+        <button class="btn btn-excel" onclick="exportarExcel()" title="Descargar todos los registros en Excel">📥 Excel</button>
       </div>
       <div class="list" id="list"><div class="empty">Cargando...</div></div>
     </div>
@@ -670,6 +674,64 @@ document.querySelectorAll(".tab").forEach(b =>
 $("search").addEventListener("input", render);
 setInterval(cargar, 15000);
 cargar();
+
+/* ── EXPORTAR EXCEL ─────────────────────────────────────── */
+function exportarExcel() {
+  if (!registros.length) {
+    alert("No hay registros para exportar.");
+    return;
+  }
+
+  const filas = registros.map(r => {
+    const c = r.composicion || {};
+    return {
+      "Nombre responsable":   r.nombre || "",
+      "👨 Hombres":          Number(c.hombres)      || 0,
+      "👩 Mujeres":          Number(c.mujeres)      || 0,
+      "👦 Niños":            Number(c.ninos)        || 0,
+      "👧 Niñas":            Number(c.ninas)        || 0,
+      "🧑 Adolescentes":     Number(c.adolescentes) || 0,
+      "Total personas":       totalComp(r.composicion),
+      "Teléfono":             r.telefono  || "",
+      "Dónde van a llegar":   r.destino   || "",
+      "Qué necesitan":        (r.necesidades || []).join(", "),
+      "Notas":                r.notas     || "",
+      "Fecha de registro":    r.createdAt ? new Date(r.createdAt).toLocaleString("es-VE") : "",
+      "Estado":               r.ayudado ? "Ayudado" : "Pendiente",
+      "Ayudado por":          r.ayudadoPor || "",
+      "Fecha de ayuda":       r.ayudadoAt  ? new Date(r.ayudadoAt).toLocaleString("es-VE") : "",
+    };
+  });
+
+  const hoja   = XLSX.utils.json_to_sheet(filas);
+  const libro  = XLSX.utils.book_new();
+
+  // Ancho de columnas
+  hoja["!cols"] = [
+    {wch:28},{wch:10},{wch:10},{wch:8},{wch:8},{wch:13},{wch:14},
+    {wch:18},{wch:32},{wch:36},{wch:36},{wch:20},{wch:12},{wch:24},{wch:20},
+  ];
+
+  XLSX.utils.book_append_sheet(libro, hoja, "Registros");
+
+  // Hoja resumen
+  const ayudados   = registros.filter(r => r.ayudado).length;
+  const pendientes = registros.length - ayudados;
+  const totalPers  = registros.reduce((a, r) => a + totalComp(r.composicion), 0);
+  const resumen = [
+    { "Indicador": "Total de registros",    "Valor": registros.length },
+    { "Indicador": "Total de personas",     "Valor": totalPers },
+    { "Indicador": "Grupos ayudados",       "Valor": ayudados },
+    { "Indicador": "Grupos pendientes",     "Valor": pendientes },
+    { "Indicador": "Fecha de exportación",  "Valor": new Date().toLocaleString("es-VE") },
+  ];
+  const hojaRes = XLSX.utils.json_to_sheet(resumen);
+  hojaRes["!cols"] = [{wch:24},{wch:28}];
+  XLSX.utils.book_append_sheet(libro, hojaRes, "Resumen");
+
+  const fecha = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(libro, `brigada_ayuda_${fecha}.xlsx`);
+}
 </script>
 </body>
 </html>
