@@ -65,6 +65,23 @@ header{
 .hdr-txt .s1{font-size:.95rem;opacity:.9;margin-top:4px;}
 .hdr-txt .s2{font-size:.82rem;opacity:.7;margin-top:2px;}
 
+/* admin */
+.admin-btn{
+  position:absolute;top:14px;right:16px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(200,155,36,.4);
+  border-radius:8px;padding:6px 10px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+  color:rgba(255,255,255,.75);font-size:.78rem;font-weight:600;
+  font-family:inherit;transition:all .2s;
+}
+.admin-btn:hover{background:rgba(200,155,36,.2);border-color:var(--dorado);color:#fff;}
+.admin-btn svg{width:15px;height:15px;fill:currentColor;flex-shrink:0;}
+.admin-btn.activo{background:rgba(31,139,90,.2);border-color:var(--verde);color:#6ee7b7;}
+.admin-badge{
+  display:inline-block;background:var(--verde);color:#fff;
+  font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:20px;
+}
+
 /* ── WRAP ───────────────────────────────────────────────── */
 .wrap{max-width:1100px;margin:0 auto;padding:18px 14px;}
 
@@ -246,6 +263,22 @@ textarea{resize:vertical;min-height:58px;}
 
 .empty{text-align:center;color:var(--gris);padding:40px 16px;font-size:.95rem;}
 
+/* badge verificado */
+.badge-verif{display:inline-flex;align-items:center;gap:4px;background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:700;}
+.badge-no-verif{display:inline-flex;align-items:center;gap:4px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:700;}
+
+/* checkbox verificado en formulario */
+.verif-box{display:flex;align-items:flex-start;gap:10px;background:#fef9ec;border:1.5px solid var(--dorado);border-radius:10px;padding:12px 14px;margin:12px 0 10px;}
+.verif-box input[type=checkbox]{width:18px;height:18px;accent-color:var(--dorado);flex-shrink:0;margin-top:2px;cursor:pointer;}
+.verif-box label{font-size:.87rem;color:#5c3a00;line-height:1.45;cursor:pointer;}
+.verif-box label strong{color:#1a1a1a;}
+
+/* banner contacto */
+.contacto-banner{background:linear-gradient(90deg,#1a1a1a 0%,#2e1e00 100%);color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:.88rem;flex-wrap:wrap;text-align:center;border-bottom:2px solid var(--dorado);}
+.contacto-banner strong{color:var(--dorado);}
+.contacto-banner a{color:var(--dorado);font-weight:700;text-decoration:none;}
+.contacto-banner a:hover{text-decoration:underline;}
+
 /* ── VERSÍCULO OVERLAY ───────────────────────────────────── */
 .versiculo-bg{
   display:none;position:fixed;inset:0;
@@ -347,7 +380,15 @@ footer{
     </div>
     <img class="hdr-logo" src="src/photo_2026-06-27_18-31-16.jpg" alt="Logo Brigada" />
   </div>
+  <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()">
+    <svg viewBox="0 0 24 24"><path d="M12 1C8.676 1 6 3.676 6 7v1H4v15h16V8h-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v1H8V7c0-2.276 1.724-4 4-4zm0 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>
+    <span id="adminLabel">Admin</span>
+  </button>
 </header>
+
+<div class="contacto-banner">
+  📞 ¿Tienes información o quieres ayudar? Comunícate con <strong>Yennalber Sanchez</strong> &nbsp;·&nbsp; <a href="tel:+584246766353">0424-6766353</a>
+</div>
 
 <div class="wrap">
   <!-- ESTADÍSTICAS -->
@@ -389,11 +430,21 @@ footer{
           <label><input type="checkbox" value="Ropa" />Ropa</label>
           <label><input type="checkbox" value="Refugio" />Refugio</label>
           <label><input type="checkbox" value="Transporte" />Transporte</label>
-          <label><input type="checkbox" value="Pañales" />Pañales</label>
+          <label><input type="checkbox" value="Artículos personales" />Artículos personales</label>
+          <label><input type="checkbox" value="Artículos de higiene" />Artículos de higiene</label>
+          <label><input type="checkbox" value="Artículos de aseo" />Artículos de aseo</label>
+          <label><input type="checkbox" value="Paños" />Paños</label>
+          <label><input type="checkbox" value="Pañales de niños" />Pañales de niños</label>
+          <label><input type="checkbox" value="Pañales de adultos" />Pañales de adultos</label>
         </div>
 
         <label class="flbl">Notas adicionales</label>
         <textarea id="notas" placeholder="Condiciones de salud, situación especial, necesidades específicas..."></textarea>
+
+        <div class="verif-box">
+          <input type="checkbox" id="verificado" />
+          <label for="verificado"><strong>✅ Información verificada</strong> — Marcar solo si un voluntario o brigadista ya confirmó los datos de esta persona. <em>Si no fue verificada, no marques esta casilla.</em></label>
+        </div>
 
         <button type="submit" class="btn btn-primary" id="submitBtn">Guardar registro</button>
         <div class="msg" id="formMsg"></div>
@@ -425,9 +476,10 @@ footer{
     </div>
     <div id="det-body"></div>
     <div class="mfooter">
-      <button class="btn btn-ghost" id="det-cerrar2">Cerrar</button>
-      <button class="btn btn-help"  id="det-ayudar">✓ Marcar como ayudado</button>
-      <button class="btn btn-danger" id="det-eliminar">🗑 Eliminar</button>
+      <button class="btn btn-ghost"  id="det-cerrar2">Cerrar</button>
+      <button class="btn btn-help"   id="det-ayudar"   style="display:none">✓ Marcar como ayudado</button>
+      <button class="btn" id="det-editar"  style="display:none;background:#7c3aed;color:#fff;flex:0 0 auto">✏️ Editar</button>
+      <button class="btn btn-danger" id="det-eliminar" style="display:none;flex:0 0 auto">🗑 Eliminar</button>
     </div>
   </div>
 </div>
@@ -460,6 +512,65 @@ footer{
       <button class="btn btn-ghost"  id="el-cancelar">Cancelar</button>
       <button class="btn btn-danger" id="el-confirmar">Sí, eliminar</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL: Login admin -->
+<div class="mbg" id="mLogin">
+  <div class="modal" style="max-width:360px">
+    <div class="mhdr">
+      <h3>🔐 Acceso administrador</h3>
+      <button class="mbtn-close" id="login-cerrar">✕</button>
+    </div>
+    <p class="msubt">Ingresa la contraseña de administrador para poder editar y eliminar registros.</p>
+    <input class="minput" type="password" id="login-pass" placeholder="Contraseña..." />
+    <p id="login-error" style="color:var(--rojo);font-size:.85rem;margin-bottom:10px;display:none">Contraseña incorrecta.</p>
+    <div class="mrow">
+      <button class="btn btn-ghost" id="login-cancelar">Cancelar</button>
+      <button class="btn btn-primary" id="login-confirmar" style="margin:0;flex:1">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Editar registro (admin) -->
+<div class="mbg" id="mEditar">
+  <div class="modal" style="max-width:500px">
+    <div class="mhdr">
+      <h3>✏️ Editar registro</h3>
+      <button class="mbtn-close" id="edit-cerrar">✕</button>
+    </div>
+    <label class="flbl">Nombre del responsable</label>
+    <input type="text" id="edit-nombre" />
+    <label class="flbl">Teléfono</label>
+    <input type="tel" id="edit-telefono" />
+    <label class="flbl">¿Dónde va a llegar?</label>
+    <input type="text" id="edit-destino" />
+    <label class="flbl">¿Qué necesita?</label>
+    <div class="needs" id="edit-needs">
+      <label><input type="checkbox" value="Comida" />Comida</label>
+      <label><input type="checkbox" value="Agua" />Agua</label>
+      <label><input type="checkbox" value="Medicinas" />Medicinas</label>
+      <label><input type="checkbox" value="Ropa" />Ropa</label>
+      <label><input type="checkbox" value="Refugio" />Refugio</label>
+      <label><input type="checkbox" value="Transporte" />Transporte</label>
+      <label><input type="checkbox" value="Artículos personales" />Artículos personales</label>
+      <label><input type="checkbox" value="Artículos de higiene" />Artículos de higiene</label>
+      <label><input type="checkbox" value="Artículos de aseo" />Artículos de aseo</label>
+      <label><input type="checkbox" value="Paños" />Paños</label>
+      <label><input type="checkbox" value="Pañales de niños" />Pañales de niños</label>
+      <label><input type="checkbox" value="Pañales de adultos" />Pañales de adultos</label>
+    </div>
+    <label class="flbl">Notas</label>
+    <textarea id="edit-notas" style="min-height:60px"></textarea>
+    <div class="verif-box" style="margin-top:12px">
+      <input type="checkbox" id="edit-verificado" />
+      <label for="edit-verificado"><strong>✅ Información verificada</strong> — Marcar si los datos de esta persona ya fueron confirmados por un brigadista.</label>
+    </div>
+    <div class="mrow" style="margin-top:16px">
+      <button class="btn btn-ghost" id="edit-cancelar">Cancelar</button>
+      <button class="btn btn-primary" id="edit-guardar" style="margin:0;flex:1">Guardar cambios</button>
+    </div>
+    <div class="msg" id="edit-msg"></div>
   </div>
 </div>
 
@@ -584,7 +695,10 @@ function render() {
     <div class="reg ${r.ayudado?"ok":""}" onclick="abrirDetalle('${r.id}')">
       <div class="reg-top">
         <span class="reg-nombre">${esc(r.nombre)}</span>
-        ${r.ayudado ? '<span class="badge-ok">✓ Ayudado</span>' : '<span class="badge-pend">Pendiente</span>'}
+        <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+          ${r.ayudado ? '<span class="badge-ok">✓ Ayudado</span>' : '<span class="badge-pend">Pendiente</span>'}
+          ${r.verificado ? '<span class="badge-verif">✅ Verificado</span>' : '<span class="badge-no-verif">⚠️ Sin verificar</span>'}
+        </div>
       </div>
       ${badges ? `<div class="reg-comp">${badges}</div>` : ""}
       <div class="reg-meta">
@@ -629,8 +743,9 @@ window.abrirDetalle = id => {
     <div class="det-sec">
       <h4>Estado del registro</h4>
       <div class="det-row"><span class="ico">🕒</span><span>Registrado el ${fecha(r.createdAt)}</span></div>
+      <div class="det-row"><span class="ico">${r.verificado ? "✅" : "⚠️"}</span><span style="color:${r.verificado?"#065f46":"#92400e"};font-weight:600">${r.verificado ? "Información verificada por brigadista" : "Información pendiente de verificación"}</span></div>
       ${r.ayudado
-        ? `<div class="det-row"><span class="ico">✅</span><span style="color:var(--verde);font-weight:600">Ayudado por ${esc(r.ayudadoPor||"(sin nombre)")} · ${fecha(r.ayudadoAt)}</span></div>`
+        ? `<div class="det-row"><span class="ico">🤝</span><span style="color:var(--verde);font-weight:600">Ayudado por ${esc(r.ayudadoPor||"(sin nombre)")} · ${fecha(r.ayudadoAt)}</span></div>`
         : `<div class="det-row"><span class="ico">⏳</span><span style="color:#92400e;font-weight:600">Pendiente de ayuda</span></div>`}
     </div>
   `;
@@ -704,7 +819,7 @@ $("mEliminar").addEventListener("click", e => { if (e.target === $("mEliminar"))
 $("el-confirmar").addEventListener("click", async () => {
   if (!_elimId) return;
   $("mEliminar").classList.remove("open");
-  await fetch(API, { method:"POST", headers:{"Content-Type":"application/json"},
+  await fetch(API, { method:"POST", headers:{"Content-Type":"application/json","x-admin-pass": adminPass || ""},
     body: JSON.stringify({ action:"delete", id: _elimId }) });
   _elimId = null;
   await cargar();
@@ -730,7 +845,8 @@ $("form").addEventListener("submit", async e => {
       method:"POST", headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ action:"create", nombre, composicion,
         telefono: $("telefono").value, destino: $("destino").value,
-        necesidades, notas: $("notas").value }),
+        necesidades, notas: $("notas").value,
+        verificado: $("verificado").checked }),
     });
     if (!res.ok) throw new Error();
     $("form").reset();
@@ -771,6 +887,138 @@ $("search").addEventListener("input", render);
 setInterval(cargar, 10000);
 cargar();
 
+/* ── ADMIN ──────────────────────────────────────────────── */
+let adminPass = sessionStorage.getItem("adminPass") || null;
+
+function esAdmin() { return !!adminPass; }
+
+function actualizarBtnAdmin() {
+  const btn = $("adminBtn");
+  const lbl = $("adminLabel");
+  if (esAdmin()) {
+    btn.classList.add("activo");
+    lbl.innerHTML = '<span class="admin-badge">Admin</span> Salir';
+  } else {
+    btn.classList.remove("activo");
+    lbl.textContent = "Admin";
+  }
+}
+
+function toggleAdmin() {
+  if (esAdmin()) {
+    adminPass = null;
+    sessionStorage.removeItem("adminPass");
+    actualizarBtnAdmin();
+  } else {
+    $("login-pass").value = "";
+    $("login-error").style.display = "none";
+    $("mLogin").classList.add("open");
+    setTimeout(() => $("login-pass").focus(), 100);
+  }
+}
+
+// Login modal
+$("login-cerrar").addEventListener("click",   () => $("mLogin").classList.remove("open"));
+$("login-cancelar").addEventListener("click", () => $("mLogin").classList.remove("open"));
+$("mLogin").addEventListener("click", e => { if (e.target === $("mLogin")) $("mLogin").classList.remove("open"); });
+$("login-pass").addEventListener("keydown", e => { if (e.key === "Enter") $("login-confirmar").click(); });
+
+$("login-confirmar").addEventListener("click", async () => {
+  const pass = $("login-pass").value;
+  const btn = $("login-confirmar");
+  btn.disabled = true; btn.textContent = "Verificando...";
+  try {
+    const res = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-pass": pass },
+      body: JSON.stringify({ action: "verify" }),
+    });
+    if (res.status === 403) {
+      $("login-error").style.display = "block";
+      $("login-pass").value = "";
+      $("login-pass").focus();
+      return;
+    }
+    adminPass = pass;
+    sessionStorage.setItem("adminPass", pass);
+    $("mLogin").classList.remove("open");
+    actualizarBtnAdmin();
+  } catch {
+    $("login-error").style.display = "block";
+  } finally {
+    btn.disabled = false; btn.textContent = "Entrar";
+  }
+});
+
+// Mostrar / ocultar botones admin en modal detalle
+const _origAbrirDetalle = window.abrirDetalle;
+window.abrirDetalle = (id) => {
+  _origAbrirDetalle(id);
+  const adminVisible = esAdmin() ? "inline-flex" : "none";
+  $("det-ayudar").style.display   = adminVisible;
+  $("det-editar").style.display   = adminVisible;
+  $("det-eliminar").style.display = adminVisible;
+};
+
+let _editId = null;
+
+// Botón editar en detalle
+$("det-editar").addEventListener("click", () => {
+  const r = registros.find(x => x.id === _detId);
+  if (!r) return;
+  $("mDetalle").classList.remove("open");
+  $("edit-nombre").value   = r.nombre   || "";
+  $("edit-telefono").value = r.telefono || "";
+  $("edit-destino").value  = r.destino  || "";
+  $("edit-notas").value    = r.notas    || "";
+  document.querySelectorAll("#edit-needs input").forEach(cb => {
+    cb.checked = (r.necesidades || []).includes(cb.value);
+  });
+  $("edit-verificado").checked = !!r.verificado;
+  $("edit-msg").className = "msg";
+  $("mEditar").classList.add("open");
+  _editId = _detId;
+});
+
+// Edit modal
+$("edit-cerrar").addEventListener("click",   () => $("mEditar").classList.remove("open"));
+$("edit-cancelar").addEventListener("click", () => $("mEditar").classList.remove("open"));
+$("mEditar").addEventListener("click", e => { if (e.target === $("mEditar")) $("mEditar").classList.remove("open"); });
+
+$("edit-guardar").addEventListener("click", async () => {
+  if (!_editId) return;
+  const necesidades = [...document.querySelectorAll("#edit-needs input:checked")].map(c => c.value);
+  const btn = $("edit-guardar");
+  btn.disabled = true; btn.textContent = "Guardando...";
+  try {
+    const res = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-pass": adminPass || "" },
+      body: JSON.stringify({
+        action:      "edit",
+        id:          _editId,
+        nombre:      $("edit-nombre").value,
+        telefono:    $("edit-telefono").value,
+        destino:     $("edit-destino").value,
+        necesidades,
+        notas:       $("edit-notas").value,
+        verificado:  $("edit-verificado").checked,
+      }),
+    });
+    if (!res.ok) throw new Error();
+    $("mEditar").classList.remove("open");
+    await cargar();
+  } catch {
+    const m = $("edit-msg");
+    m.textContent = "Error al guardar. Intenta de nuevo.";
+    m.className = "msg err";
+  } finally {
+    btn.disabled = false; btn.textContent = "Guardar cambios";
+  }
+});
+
+actualizarBtnAdmin();
+
 /* ── EXPORTAR EXCEL ─────────────────────────────────────── */
 function exportarExcel() {
   if (!registros.length) {
@@ -792,6 +1040,7 @@ function exportarExcel() {
       "Dónde van a llegar":   r.destino   || "",
       "Qué necesitan":        (r.necesidades || []).join(", "),
       "Notas":                r.notas     || "",
+      "Información verificada": r.verificado ? "Sí" : "No",
       "Fecha de registro":    r.createdAt ? new Date(r.createdAt).toLocaleString("es-VE") : "",
       "Estado":               r.ayudado ? "Ayudado" : "Pendiente",
       "Ayudado por":          r.ayudadoPor || "",

@@ -1,23 +1,20 @@
 import { getStore } from "@netlify/blobs";
 
-// Todos los registros se guardan en UN solo blob como array JSON.
-// Esto reduce cada lectura a 1 sola petición en lugar de N+1.
-const KEY = "registros_v1";
+const KEY        = "registros_v1";
+const ADMIN_PASS = process.env.ADMIN_PASSWORD || "B@y3sp#F4lc0n26!";
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
     status,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-store",
-    },
+    headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
   });
+
+const isAdmin = (req) => req.headers.get("x-admin-pass") === ADMIN_PASS;
 
 async function leer(store) {
   const data = await store.get(KEY, { type: "json" }).catch(() => null);
   return Array.isArray(data) ? data : [];
 }
-
 async function guardar(store, registros) {
   await store.setJSON(KEY, registros);
 }
@@ -25,7 +22,6 @@ async function guardar(store, registros) {
 export default async (req) => {
   const store = getStore("registros");
 
-  // GET — devuelve todos los registros ordenados del más reciente al más antiguo
   if (req.method === "GET") {
     const registros = await leer(store);
     registros.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -38,7 +34,7 @@ export default async (req) => {
 
     const registros = await leer(store);
 
-    // CREAR registro
+    // CREAR — público
     if (body.action === "create") {
       if (!body.nombre?.trim()) return json({ error: "El nombre es obligatorio" }, 400);
       const comp = body.composicion || {};
@@ -58,6 +54,7 @@ export default async (req) => {
         destino:     String(body.destino   || "").trim(),
         necesidades: Array.isArray(body.necesidades) ? body.necesidades : [],
         notas:       String(body.notas     || "").trim(),
+        verificado:  body.verificado === true,
         ayudado:     false,
         ayudadoPor:  "",
         ayudadoAt:   null,
@@ -68,7 +65,7 @@ export default async (req) => {
       return json(nuevo, 201);
     }
 
-    // MARCAR / DESMARCAR ayudado
+    // MARCAR / DESMARCAR — público
     if (body.action === "help") {
       const idx = registros.findIndex(r => r.id === body.id);
       if (idx === -1) return json({ error: "No encontrado" }, 404);
@@ -80,8 +77,31 @@ export default async (req) => {
       return json(r);
     }
 
-    // ELIMINAR
+    // VERIFICAR CONTRASEÑA — para login del cliente
+    if (body.action === "verify") {
+      if (!isAdmin(req)) return json({ error: "No autorizado" }, 403);
+      return json({ ok: true });
+    }
+
+    // EDITAR — solo admin
+    if (body.action === "edit") {
+      if (!isAdmin(req)) return json({ error: "No autorizado" }, 403);
+      const idx = registros.findIndex(r => r.id === body.id);
+      if (idx === -1) return json({ error: "No encontrado" }, 404);
+      const r = registros[idx];
+      if (body.nombre      !== undefined) r.nombre      = String(body.nombre).trim();
+      if (body.telefono    !== undefined) r.telefono    = String(body.telefono).trim();
+      if (body.destino     !== undefined) r.destino     = String(body.destino).trim();
+      if (body.necesidades !== undefined) r.necesidades = Array.isArray(body.necesidades) ? body.necesidades : [];
+      if (body.notas       !== undefined) r.notas       = String(body.notas).trim();
+      if (body.verificado  !== undefined) r.verificado  = body.verificado === true;
+      await guardar(store, registros);
+      return json(r);
+    }
+
+    // ELIMINAR — solo admin
     if (body.action === "delete") {
+      if (!isAdmin(req)) return json({ error: "No autorizado" }, 403);
       const filtrados = registros.filter(r => r.id !== body.id);
       await guardar(store, filtrados);
       return json({ ok: true });
