@@ -265,6 +265,13 @@ textarea{resize:vertical;min-height:58px;}
 
 .empty{text-align:center;color:var(--gris);padding:40px 16px;font-size:.95rem;}
 
+/* paginación */
+.paginacion{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.paginacion button{background:#fff;border:1.5px solid var(--borde);border-radius:8px;padding:6px 14px;font-size:.88rem;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s;}
+.paginacion button:hover:not(:disabled){background:var(--gris-cl);border-color:#bbb;}
+.paginacion button:disabled{opacity:.35;cursor:default;}
+.paginacion .pag-info{font-size:.85rem;color:var(--gris);min-width:100px;text-align:center;}
+
 /* badge verificado */
 .badge-verif{display:inline-flex;align-items:center;gap:4px;background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:700;}
 .badge-no-verif{display:inline-flex;align-items:center;gap:4px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:700;}
@@ -501,6 +508,11 @@ footer{
         <button class="btn btn-excel" onclick="exportarExcel()" title="Descargar todos los registros en Excel">📥 Excel</button>
       </div>
       <div class="list" id="list"><div class="empty">Cargando...</div></div>
+      <div class="paginacion" id="paginacion" style="display:none">
+        <button id="pag-prev">← Anterior</button>
+        <span class="pag-info" id="pag-info"></span>
+        <button id="pag-next">Siguiente →</button>
+      </div>
     </div>
   </div>
 </div>
@@ -690,7 +702,9 @@ footer{
 <script>
 const API = "/api/registros";
 let registros = [];
-let filtro = "todos";
+let filtro    = "todos";
+let pagina    = 1;
+const POR_PAG = 25;
 let _ayudaId = null;
 let _elimId  = null;
 let _detId   = null;
@@ -765,10 +779,25 @@ function render() {
 
   if (!lista.length) {
     $("list").innerHTML = '<div class="empty">No hay registros que mostrar.</div>';
+    $("paginacion").style.display = "none";
     return;
   }
 
-  $("list").innerHTML = lista.map(r => {
+  // Paginación
+  const totalPags = Math.ceil(lista.length / POR_PAG);
+  if (pagina > totalPags) pagina = totalPags;
+  const inicio = (pagina - 1) * POR_PAG;
+  const pagina_lista = lista.slice(inicio, inicio + POR_PAG);
+
+  const hayPags = totalPags > 1;
+  $("paginacion").style.display = hayPags ? "flex" : "none";
+  if (hayPags) {
+    $("pag-info").textContent = `Página ${pagina} de ${totalPags} (${lista.length} registros)`;
+    $("pag-prev").disabled = pagina === 1;
+    $("pag-next").disabled = pagina === totalPags;
+  }
+
+  $("list").innerHTML = pagina_lista.map(r => {
     const badges = compBadges(r.composicion);
     const tot    = totalComp(r.composicion);
     const tags   = (r.necesidades||[]).map(n => `<span class="tag">${esc(n)}</span>`).join("");
@@ -987,10 +1016,15 @@ document.querySelectorAll(".tab").forEach(b =>
     document.querySelectorAll(".tab").forEach(x => x.classList.remove("on"));
     b.classList.add("on");
     filtro = b.dataset.f;
+    pagina = 1;
     render();
   })
 );
-$("search").addEventListener("input", render);
+$("search").addEventListener("input", () => { pagina = 1; render(); });
+
+$("pag-prev").addEventListener("click", () => { pagina--; render(); $("list").scrollIntoView({behavior:"smooth",block:"start"}); });
+$("pag-next").addEventListener("click", () => { pagina++; render(); $("list").scrollIntoView({behavior:"smooth",block:"start"}); });
+
 setInterval(cargar, 10000);
 cargar();
 
