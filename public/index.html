@@ -86,7 +86,7 @@ header{
 .wrap{max-width:1100px;margin:0 auto;padding:18px 14px;}
 
 /* ── STATS ──────────────────────────────────────────────── */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
 .stat{
   background:#fff;border-radius:12px;padding:14px 10px;
   text-align:center;box-shadow:var(--sombra);border:1px solid var(--borde);
@@ -96,6 +96,7 @@ header{
 .s-total   .num{color:var(--dorado);}
 .s-pers    .num{color:#7c3aed;}
 .s-ayud    .num{color:var(--verde);}
+.s-proc    .num{color:#2563eb;}
 .s-pend    .num{color:var(--rojo);}
 
 /* ── GRID ───────────────────────────────────────────────── */
@@ -193,6 +194,7 @@ textarea{resize:vertical;min-height:58px;}
 }
 .reg:hover{box-shadow:var(--sombra-md);transform:translateY(-1px);}
 .reg.ok{border-left-color:var(--verde);background:#f9fdf9;}
+.reg.proc{border-left-color:#2563eb;background:#f0f6ff;}
 
 .reg-top{display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:6px;}
 .reg-nombre{font-size:1.02rem;font-weight:800;}
@@ -266,6 +268,22 @@ textarea{resize:vertical;min-height:58px;}
 /* badge verificado */
 .badge-verif{display:inline-flex;align-items:center;gap:4px;background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:700;}
 .badge-no-verif{display:inline-flex;align-items:center;gap:4px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:700;}
+/* badge en proceso */
+.badge-proc{display:inline-flex;align-items:center;gap:4px;background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:700;}
+/* badge psico */
+.badge-psico{display:inline-flex;align-items:center;gap:4px;background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:700;}
+/* sección psicología en formulario */
+.psico-section{border:1.5px solid #c4b5fd;border-radius:12px;padding:14px 16px;margin:12px 0 8px;background:#faf5ff;}
+.psico-section h3{font-size:.9rem;font-weight:700;color:#5b21b6;margin:0 0 10px;}
+.psico-sub{font-size:.8rem;color:#6b7280;margin:8px 0 4px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+.psico-opts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
+.psico-opts label{display:flex;align-items:center;gap:6px;font-size:.87rem;cursor:pointer;background:#fff;border:1.5px solid #ddd;border-radius:8px;padding:6px 12px;transition:border-color .15s,background .15s;}
+.psico-opts label:has(input:checked){border-color:#7c3aed;background:#ede9fe;color:#5b21b6;font-weight:600;}
+.psico-opts input[type=radio]{accent-color:#7c3aed;}
+.psico-fields{margin-top:10px;display:none;}
+.psico-fields.show{display:block;}
+/* btn en proceso */
+.btn-proc{background:#2563eb;color:#fff;}
 
 /* checkbox verificado en formulario */
 .verif-box{display:flex;align-items:flex-start;gap:10px;background:#fef9ec;border:1.5px solid var(--dorado);border-radius:10px;padding:12px 14px;margin:12px 0 10px;}
@@ -339,7 +357,7 @@ footer{
 /* ── RESPONSIVE ─────────────────────────────────────────── */
 @media(max-width:820px){
   .grid{grid-template-columns:1fr;}
-  .stats{grid-template-columns:repeat(2,1fr);}
+  .stats{grid-template-columns:repeat(3,1fr);}
 }
 @media(max-width:560px){
   .hdr-inner{flex-wrap:wrap;gap:12px;}
@@ -387,7 +405,7 @@ footer{
 </header>
 
 <div class="contacto-banner">
-  📞 ¿Tienes información o quieres ayudar? Comunícate con <strong>Yennalber Sanchez</strong> &nbsp;·&nbsp; <a href="tel:+584246766353">0424-6766353</a>
+  📞 ¿Tienes información o quieres ayudar? Comunícate con <strong>Yennalber Sanchez</strong> &nbsp;·&nbsp; <a href="tel:+584246766353">0424-6766353</a> &nbsp;·&nbsp; <a href="https://wa.me/584246766353" target="_blank" rel="noopener" style="background:#25d366;color:#fff;padding:3px 10px;border-radius:20px;font-weight:700;">💬 WhatsApp</a>
 </div>
 
 <div class="wrap">
@@ -396,6 +414,7 @@ footer{
     <div class="stat s-total"><div class="num" id="s-total">0</div><div class="lbl">Registros</div></div>
     <div class="stat s-pers" ><div class="num" id="s-pers" >0</div><div class="lbl">Personas</div></div>
     <div class="stat s-ayud" ><div class="num" id="s-ayud" >0</div><div class="lbl">Ayudados</div></div>
+    <div class="stat s-proc" ><div class="num" id="s-proc" >0</div><div class="lbl">En proceso</div></div>
     <div class="stat s-pend" ><div class="num" id="s-pend" >0</div><div class="lbl">Pendientes</div></div>
   </div>
 
@@ -415,6 +434,9 @@ footer{
           <div class="comp-item"><span class="comp-icon">👧</span><span class="comp-lbl">Niñas</span>      <input type="number" id="c-na" min="0" value="0" /></div>
           <div class="comp-item comp-full"><span class="comp-icon">🧑</span><span class="comp-lbl">Adolescentes</span><input type="number" id="c-a" min="0" value="0" /></div>
         </div>
+
+        <label class="flbl">Edades de los integrantes <span style="font-weight:400;color:var(--gris)">(opcional)</span></label>
+        <input type="text" id="edades" placeholder="Ej: Niño 5 años, Niña 8 años, Adulto 35 años, Adulto 62 años" />
 
         <label class="flbl">Teléfono / contacto</label>
         <input type="tel" id="telefono" placeholder="Ej: 0412-1234567" />
@@ -441,6 +463,21 @@ footer{
         <label class="flbl">Notas adicionales</label>
         <textarea id="notas" placeholder="Condiciones de salud, situación especial, necesidades específicas..."></textarea>
 
+        <div class="psico-section">
+          <h3>🧠 Apoyo Psicológico — Colegio de Psicólogos</h3>
+          <label style="display:flex;align-items:center;gap:8px;font-size:.9rem;cursor:pointer;">
+            <input type="checkbox" id="psico-requiere" style="width:18px;height:18px;accent-color:#7c3aed;" />
+            <span><strong>¿Requiere atención psicológica voluntaria?</strong></span>
+          </label>
+          <div class="psico-fields" id="psico-fields">
+            <p class="psico-sub">¿Cuándo debe ser la atención?</p>
+            <div class="psico-opts">
+              <label><input type="radio" name="psico-urgencia" value="inmediata" /> 🔴 Inmediata</label>
+              <label><input type="radio" name="psico-urgencia" value="diferida"  checked /> 🟡 Puede esperar</label>
+            </div>
+          </div>
+        </div>
+
         <div class="verif-box">
           <input type="checkbox" id="verificado" />
           <label for="verificado"><strong>✅ Información verificada</strong> — Marcar solo si un voluntario o brigadista ya confirmó los datos de esta persona. <em>Si no fue verificada, no marques esta casilla.</em></label>
@@ -458,6 +495,7 @@ footer{
         <div class="tabs">
           <button class="tab on" data-f="todos">Todos</button>
           <button class="tab" data-f="pendientes">Pendientes</button>
+          <button class="tab" data-f="en_proceso">En proceso</button>
           <button class="tab" data-f="ayudados">Ayudados</button>
         </div>
         <button class="btn btn-excel" onclick="exportarExcel()" title="Descargar todos los registros en Excel">📥 Excel</button>
@@ -477,7 +515,8 @@ footer{
     <div id="det-body"></div>
     <div class="mfooter">
       <button class="btn btn-ghost"  id="det-cerrar2">Cerrar</button>
-      <button class="btn btn-help"   id="det-ayudar"   style="display:none">✓ Marcar como ayudado</button>
+      <button class="btn btn-proc"   id="det-proceso"  style="display:none;flex:0 0 auto">🔄 En proceso</button>
+      <button class="btn btn-help"   id="det-ayudar"   style="display:none">✓ Marcar ayudado</button>
       <button class="btn" id="det-editar"  style="display:none;background:#7c3aed;color:#fff;flex:0 0 auto">✏️ Editar</button>
       <button class="btn btn-danger" id="det-eliminar" style="display:none;flex:0 0 auto">🗑 Eliminar</button>
     </div>
@@ -516,6 +555,24 @@ footer{
 </div>
 
 <!-- MODAL: Login admin -->
+<!-- MODAL: En proceso -->
+<div class="mbg" id="mProceso">
+  <div class="modal" style="max-width:420px">
+    <div class="mhdr">
+      <h3>🔄 Marcar en proceso</h3>
+      <button class="mbtn-close" id="pr-cerrarX">✕</button>
+    </div>
+    <p class="msubt">Se están atendiendo los requerimientos de esta persona pero aún no se ha completado la ayuda.</p>
+    <label class="flbl">Notas (qué se está gestionando)</label>
+    <input class="minput" type="text" id="pr-notas" placeholder="Ej: Se consiguió ropa, falta medicinas..." />
+    <input type="hidden" id="pr-por" value="" />
+    <div class="mrow">
+      <button class="btn btn-ghost" id="pr-cancelar">Cancelar</button>
+      <button class="btn btn-proc"  id="pr-confirmar">🔄 Confirmar en proceso</button>
+    </div>
+  </div>
+</div>
+
 <div class="mbg" id="mLogin">
   <div class="modal" style="max-width:360px">
     <div class="mhdr">
@@ -543,6 +600,8 @@ footer{
     <input type="text" id="edit-nombre" />
     <label class="flbl">Teléfono</label>
     <input type="tel" id="edit-telefono" />
+    <label class="flbl">Edades de los integrantes</label>
+    <input type="text" id="edit-edades" placeholder="Ej: Niño 5 años, Adulto 35 años" />
     <label class="flbl">¿Dónde va a llegar?</label>
     <input type="text" id="edit-destino" />
     <label class="flbl">¿Qué necesita?</label>
@@ -562,6 +621,25 @@ footer{
     </div>
     <label class="flbl">Notas</label>
     <textarea id="edit-notas" style="min-height:60px"></textarea>
+    <div class="psico-section" style="margin-top:12px">
+      <h3>🧠 Apoyo Psicológico</h3>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.9rem;cursor:pointer;">
+        <input type="checkbox" id="edit-psico-requiere" style="width:18px;height:18px;accent-color:#7c3aed;" />
+        <span><strong>Requiere atención psicológica voluntaria</strong> <em style="color:#6b7280;font-size:.82rem">(adultos)</em></span>
+      </label>
+      <div class="psico-fields" id="edit-psico-fields">
+        <p class="psico-sub">¿Cuándo debe ser la atención?</p>
+        <div class="psico-opts">
+          <label><input type="radio" name="edit-psico-urgencia" value="inmediata" /> 🔴 Inmediata</label>
+          <label><input type="radio" name="edit-psico-urgencia" value="diferida"  /> 🟡 Puede esperar</label>
+        </div>
+        <p class="psico-sub">Tipo de especialidad</p>
+        <div class="psico-opts">
+          <label><input type="radio" name="edit-psico-esp" value="psicologia"  /> 🧠 Psicología</label>
+          <label><input type="radio" name="edit-psico-esp" value="psiquiatria" /> 🏥 Psiquiatría</label>
+        </div>
+      </div>
+    </div>
     <div class="verif-box" style="margin-top:12px">
       <input type="checkbox" id="edit-verificado" />
       <label for="edit-verificado"><strong>✅ Información verificada</strong> — Marcar si los datos de esta persona ya fueron confirmados por un brigadista.</label>
@@ -664,15 +742,18 @@ async function cargar() {
 function render() {
   const total   = registros.length;
   const pers    = registros.reduce((a, r) => a + totalComp(r.composicion), 0);
-  const ayud    = registros.filter(r => r.ayudado).length;
+  const ayud = registros.filter(r => r.ayudado).length;
+  const proc = registros.filter(r => !r.ayudado && r.enProceso).length;
   $("s-total").textContent = total;
   $("s-pers").textContent  = pers;
   $("s-ayud").textContent  = ayud;
-  $("s-pend").textContent  = total - ayud;
+  $("s-proc").textContent  = proc;
+  $("s-pend").textContent  = total - ayud - proc;
 
   const q = $("search").value.trim().toLowerCase();
   const lista = registros.filter(r => {
-    if (filtro === "pendientes" && r.ayudado)  return false;
+    if (filtro === "pendientes" && (r.ayudado || r.enProceso)) return false;
+    if (filtro === "en_proceso" && (!r.enProceso || r.ayudado)) return false;
     if (filtro === "ayudados"  && !r.ayudado) return false;
     if (q) {
       const txt = [r.nombre, r.destino, r.telefono, r.notas,
@@ -692,12 +773,13 @@ function render() {
     const tot    = totalComp(r.composicion);
     const tags   = (r.necesidades||[]).map(n => `<span class="tag">${esc(n)}</span>`).join("");
     return `
-    <div class="reg ${r.ayudado?"ok":""}" onclick="abrirDetalle('${r.id}')">
+    <div class="reg ${r.ayudado?"ok":r.enProceso?"proc":""}" onclick="abrirDetalle('${r.id}')">
       <div class="reg-top">
         <span class="reg-nombre">${esc(r.nombre)}</span>
         <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
-          ${r.ayudado ? '<span class="badge-ok">✓ Ayudado</span>' : '<span class="badge-pend">Pendiente</span>'}
+          ${r.ayudado ? '<span class="badge-ok">✓ Ayudado</span>' : r.enProceso ? '<span class="badge-proc">🔄 En proceso</span>' : '<span class="badge-pend">Pendiente</span>'}
           ${r.verificado ? '<span class="badge-verif">✅ Verificado</span>' : '<span class="badge-no-verif">⚠️ Sin verificar</span>'}
+          ${r.psicologia?.requiere ? '<span class="badge-psico">🧠 Psico</span>' : ''}
         </div>
       </div>
       ${badges ? `<div class="reg-comp">${badges}</div>` : ""}
@@ -729,6 +811,7 @@ window.abrirDetalle = id => {
     <div class="det-sec">
       <h4>Composición del grupo · ${tot} persona(s)</h4>
       <div class="det-comp">${compDetalle(r.composicion)}</div>
+      ${r.edades ? `<div class="det-row" style="margin-top:8px"><span class="ico">🎂</span><span style="font-size:.88rem"><strong>Edades:</strong> ${esc(r.edades)}</span></div>` : ""}
     </div>
     <div class="det-sec">
       <h4>Contacto y destino</h4>
@@ -740,12 +823,20 @@ window.abrirDetalle = id => {
       <div class="tags" style="margin:0">${tags}</div>
     </div>
     ${r.notas ? `<div class="det-sec"><h4>Notas</h4><div class="det-notas">${esc(r.notas)}</div></div>` : ""}
+    ${r.psicologia?.requiere ? `
+    <div class="det-sec" style="border-left:3px solid #7c3aed;padding-left:10px">
+      <h4 style="color:#5b21b6">🧠 Apoyo Psicológico</h4>
+      <div class="det-row"><span class="ico">⏱️</span><span style="font-weight:600">Atención: ${r.psicologia.urgencia === "inmediata" ? "🔴 Inmediata" : "🟡 Puede esperar"}</span></div>
+      <div class="det-row"><span class="ico">🏥</span><span style="font-weight:600">Especialidad: ${r.psicologia.especialidad === "psiquiatria" ? "Psiquiatría (especializada)" : "Psicología"}</span></div>
+    </div>` : ""}
     <div class="det-sec">
       <h4>Estado del registro</h4>
       <div class="det-row"><span class="ico">🕒</span><span>Registrado el ${fecha(r.createdAt)}</span></div>
       <div class="det-row"><span class="ico">${r.verificado ? "✅" : "⚠️"}</span><span style="color:${r.verificado?"#065f46":"#92400e"};font-weight:600">${r.verificado ? "Información verificada por brigadista" : "Información pendiente de verificación"}</span></div>
       ${r.ayudado
         ? `<div class="det-row"><span class="ico">🤝</span><span style="color:var(--verde);font-weight:600">Ayudado por ${esc(r.ayudadoPor||"(sin nombre)")} · ${fecha(r.ayudadoAt)}</span></div>`
+        : r.enProceso
+        ? `<div class="det-row"><span class="ico">🔄</span><span style="color:#1e40af;font-weight:600">En proceso${r.enProcesoBy ? " · " + esc(r.enProcesoBy) : ""}${r.enProcesoNotas ? " — " + esc(r.enProcesoNotas) : ""}</span></div>`
         : `<div class="det-row"><span class="ico">⏳</span><span style="color:#92400e;font-weight:600">Pendiente de ayuda</span></div>`}
     </div>
   `;
@@ -755,8 +846,16 @@ window.abrirDetalle = id => {
     btnAy.textContent = "↩ Desmarcar ayuda";
     btnAy.className   = "btn btn-undo";
   } else {
-    btnAy.textContent = "✓ Marcar como ayudado";
+    btnAy.textContent = "✓ Marcar ayudado";
     btnAy.className   = "btn btn-help";
+  }
+  const btnPr = $("det-proceso");
+  if (r.enProceso) {
+    btnPr.textContent = "↩ Quitar en proceso";
+    btnPr.className   = "btn btn-ghost";
+  } else {
+    btnPr.textContent = "🔄 En proceso";
+    btnPr.className   = "btn btn-proc";
   }
 
   $("mDetalle").classList.add("open");
@@ -793,7 +892,8 @@ $("det-eliminar").addEventListener("click", () => {
 
 /* ── MODAL AYUDA ────────────────────────────────────────── */
 async function ejecutarMarca(ayudadoPor) {
-  const res = await fetch(API, { method:"POST", headers:{"Content-Type":"application/json"},
+  const res = await fetch(API, { method:"POST",
+    headers:{"Content-Type":"application/json","x-admin-pass": adminPass || ""},
     body: JSON.stringify({ action:"help", id: _ayudaId, ayudadoPor }) });
   const r = await res.json();
   _ayudaId = null;
@@ -844,13 +944,20 @@ $("form").addEventListener("submit", async e => {
     const res = await fetch(API, {
       method:"POST", headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ action:"create", nombre, composicion,
-        telefono: $("telefono").value, destino: $("destino").value,
+        telefono: $("telefono").value, edades: $("edades").value,
+        destino: $("destino").value,
         necesidades, notas: $("notas").value,
-        verificado: $("verificado").checked }),
+        verificado: $("verificado").checked,
+        psicologia: {
+          requiere: $("psico-requiere").checked,
+          urgencia: document.querySelector('input[name="psico-urgencia"]:checked')?.value || "diferida",
+          especialidad: "psicologia",
+        } }),
     });
     if (!res.ok) throw new Error();
     $("form").reset();
     ["c-h","c-m","c-ni","c-na","c-a"].forEach(id => $(id).value = 0);
+    $("psico-fields").classList.remove("show");
     mostrarMsg("formMsg", "✓ Registro guardado correctamente.", "ok");
     mostrarVersiculo();
     await cargar();
@@ -950,15 +1057,65 @@ $("login-confirmar").addEventListener("click", async () => {
   }
 });
 
+// Toggle psicología en formulario principal
+$("psico-requiere").addEventListener("change", function() {
+  $("psico-fields").classList.toggle("show", this.checked);
+});
+$("edit-psico-requiere").addEventListener("change", function() {
+  $("edit-psico-fields").classList.toggle("show", this.checked);
+});
+
 // Mostrar / ocultar botones admin en modal detalle
 const _origAbrirDetalle = window.abrirDetalle;
 window.abrirDetalle = (id) => {
   _origAbrirDetalle(id);
   const adminVisible = esAdmin() ? "inline-flex" : "none";
+  $("det-proceso").style.display  = adminVisible;
   $("det-ayudar").style.display   = adminVisible;
   $("det-editar").style.display   = adminVisible;
   $("det-eliminar").style.display = adminVisible;
 };
+
+// Botón En proceso
+let _procesoId = null;
+$("det-proceso").addEventListener("click", () => {
+  const r = registros.find(x => x.id === _detId);
+  if (!r) return;
+  if (r.enProceso) {
+    // desmarcar directo
+    _procesoId = _detId;
+    $("mDetalle").classList.remove("open");
+    ejecutarProceso("", "");
+  } else {
+    _procesoId = _detId;
+    $("pr-por").value   = "";
+    $("pr-notas").value = "";
+    $("mDetalle").classList.remove("open");
+    $("mProceso").classList.add("open");
+    setTimeout(() => $("pr-por").focus(), 100);
+  }
+});
+
+async function ejecutarProceso(por, notas) {
+  await fetch(API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-admin-pass": adminPass || "" },
+    body: JSON.stringify({ action: "en_proceso", id: _procesoId, por, notas }),
+  });
+  _procesoId = null;
+  await cargar();
+}
+
+$("pr-cerrarX").addEventListener("click",  () => { $("mProceso").classList.remove("open"); _procesoId = null; });
+$("pr-cancelar").addEventListener("click", () => { $("mProceso").classList.remove("open"); _procesoId = null; });
+$("mProceso").addEventListener("click", e => { if (e.target === $("mProceso")) { $("mProceso").classList.remove("open"); _procesoId = null; } });
+$("pr-confirmar").addEventListener("click", () => {
+  if (!_procesoId) return;
+  const por   = $("pr-por").value.trim();
+  const notas = $("pr-notas").value.trim();
+  $("mProceso").classList.remove("open");
+  ejecutarProceso(por, notas);
+});
 
 let _editId = null;
 
@@ -969,12 +1126,20 @@ $("det-editar").addEventListener("click", () => {
   $("mDetalle").classList.remove("open");
   $("edit-nombre").value   = r.nombre   || "";
   $("edit-telefono").value = r.telefono || "";
+  $("edit-edades").value   = r.edades   || "";
   $("edit-destino").value  = r.destino  || "";
   $("edit-notas").value    = r.notas    || "";
   document.querySelectorAll("#edit-needs input").forEach(cb => {
     cb.checked = (r.necesidades || []).includes(cb.value);
   });
   $("edit-verificado").checked = !!r.verificado;
+  const ep = r.psicologia || {};
+  $("edit-psico-requiere").checked = !!ep.requiere;
+  document.getElementById("edit-psico-fields").classList.toggle("show", !!ep.requiere);
+  const urg = document.querySelector(`input[name="edit-psico-urgencia"][value="${ep.urgencia||"diferida"}"]`);
+  if (urg) urg.checked = true;
+  const esp = document.querySelector(`input[name="edit-psico-esp"][value="${ep.especialidad||"psicologia"}"]`);
+  if (esp) esp.checked = true;
   $("edit-msg").className = "msg";
   $("mEditar").classList.add("open");
   _editId = _detId;
@@ -999,10 +1164,16 @@ $("edit-guardar").addEventListener("click", async () => {
         id:          _editId,
         nombre:      $("edit-nombre").value,
         telefono:    $("edit-telefono").value,
+        edades:      $("edit-edades").value,
         destino:     $("edit-destino").value,
         necesidades,
         notas:       $("edit-notas").value,
         verificado:  $("edit-verificado").checked,
+        psicologia: {
+          requiere:     $("edit-psico-requiere").checked,
+          urgencia:     document.querySelector('input[name="edit-psico-urgencia"]:checked')?.value || "diferida",
+          especialidad: document.querySelector('input[name="edit-psico-esp"]:checked')?.value       || "psicologia",
+        },
       }),
     });
     if (!res.ok) throw new Error();
@@ -1037,6 +1208,7 @@ function exportarExcel() {
       "🧑 Adolescentes":     Number(c.adolescentes) || 0,
       "Total personas":       totalComp(r.composicion),
       "Teléfono":             r.telefono  || "",
+      "Edades":               r.edades    || "",
       "Dónde van a llegar":   r.destino   || "",
       "Qué necesitan":        (r.necesidades || []).join(", "),
       "Notas":                r.notas     || "",

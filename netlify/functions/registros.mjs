@@ -45,34 +45,61 @@ export default async (req) => {
         ninas:        Math.max(0, Number(comp.ninas)        || 0),
         adolescentes: Math.max(0, Number(comp.adolescentes) || 0),
       };
+      const psico = body.psicologia && typeof body.psicologia === "object" ? {
+        requiere:     body.psicologia.requiere === true,
+        urgencia:     ["inmediata","diferida"].includes(body.psicologia.urgencia) ? body.psicologia.urgencia : "diferida",
+        especialidad: ["psicologia","psiquiatria"].includes(body.psicologia.especialidad) ? body.psicologia.especialidad : "psicologia",
+      } : { requiere: false, urgencia: "diferida", especialidad: "psicologia" };
       const nuevo = {
-        id:          crypto.randomUUID(),
-        nombre:      String(body.nombre).trim(),
+        id:            crypto.randomUUID(),
+        nombre:        String(body.nombre).trim(),
         composicion,
-        personas:    Object.values(composicion).reduce((a, v) => a + v, 0),
-        telefono:    String(body.telefono  || "").trim(),
-        destino:     String(body.destino   || "").trim(),
-        necesidades: Array.isArray(body.necesidades) ? body.necesidades : [],
-        notas:       String(body.notas     || "").trim(),
-        verificado:  body.verificado === true,
-        ayudado:     false,
-        ayudadoPor:  "",
-        ayudadoAt:   null,
-        createdAt:   Date.now(),
+        personas:      Object.values(composicion).reduce((a, v) => a + v, 0),
+        telefono:      String(body.telefono  || "").trim(),
+        edades:        String(body.edades    || "").trim(),
+        destino:       String(body.destino   || "").trim(),
+        necesidades:   Array.isArray(body.necesidades) ? body.necesidades : [],
+        notas:         String(body.notas     || "").trim(),
+        verificado:    body.verificado === true,
+        psicologia:    psico,
+        enProceso:     false,
+        enProcesoNotas:"",
+        enProcesoBy:   "",
+        enProcesoAt:   null,
+        ayudado:       false,
+        ayudadoPor:    "",
+        ayudadoAt:     null,
+        createdAt:     Date.now(),
       };
       registros.push(nuevo);
       await guardar(store, registros);
       return json(nuevo, 201);
     }
 
-    // MARCAR / DESMARCAR — público
+    // MARCAR / DESMARCAR AYUDADO — solo admin
     if (body.action === "help") {
+      if (!isAdmin(req)) return json({ error: "No autorizado" }, 403);
       const idx = registros.findIndex(r => r.id === body.id);
       if (idx === -1) return json({ error: "No encontrado" }, 404);
       const r = registros[idx];
       r.ayudado    = !r.ayudado;
       r.ayudadoPor = r.ayudado ? String(body.ayudadoPor || "").trim() : "";
       r.ayudadoAt  = r.ayudado ? Date.now() : null;
+      if (r.ayudado) { r.enProceso = false; r.enProcesoNotas = ""; r.enProcesoBy = ""; r.enProcesoAt = null; }
+      await guardar(store, registros);
+      return json(r);
+    }
+
+    // MARCAR EN PROCESO — solo admin
+    if (body.action === "en_proceso") {
+      if (!isAdmin(req)) return json({ error: "No autorizado" }, 403);
+      const idx = registros.findIndex(r => r.id === body.id);
+      if (idx === -1) return json({ error: "No encontrado" }, 404);
+      const r = registros[idx];
+      r.enProceso      = !r.enProceso;
+      r.enProcesoNotas = r.enProceso ? String(body.notas || "").trim() : "";
+      r.enProcesoBy    = r.enProceso ? String(body.por   || "").trim() : "";
+      r.enProcesoAt    = r.enProceso ? Date.now() : null;
       await guardar(store, registros);
       return json(r);
     }
@@ -91,10 +118,17 @@ export default async (req) => {
       const r = registros[idx];
       if (body.nombre      !== undefined) r.nombre      = String(body.nombre).trim();
       if (body.telefono    !== undefined) r.telefono    = String(body.telefono).trim();
+      if (body.edades      !== undefined) r.edades      = String(body.edades).trim();
       if (body.destino     !== undefined) r.destino     = String(body.destino).trim();
       if (body.necesidades !== undefined) r.necesidades = Array.isArray(body.necesidades) ? body.necesidades : [];
       if (body.notas       !== undefined) r.notas       = String(body.notas).trim();
       if (body.verificado  !== undefined) r.verificado  = body.verificado === true;
+      if (body.psicologia  !== undefined && typeof body.psicologia === "object") {
+        if (!r.psicologia) r.psicologia = { requiere: false, urgencia: "diferida", especialidad: "psicologia" };
+        if (body.psicologia.requiere     !== undefined) r.psicologia.requiere     = body.psicologia.requiere === true;
+        if (body.psicologia.urgencia     !== undefined) r.psicologia.urgencia     = ["inmediata","diferida"].includes(body.psicologia.urgencia) ? body.psicologia.urgencia : "diferida";
+        if (body.psicologia.especialidad !== undefined) r.psicologia.especialidad = ["psicologia","psiquiatria"].includes(body.psicologia.especialidad) ? body.psicologia.especialidad : "psicologia";
+      }
       await guardar(store, registros);
       return json(r);
     }
