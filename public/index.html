@@ -291,6 +291,18 @@ textarea{resize:vertical;min-height:58px;}
 .psico-fields.show{display:block;}
 /* btn en proceso */
 .btn-proc{background:#2563eb;color:#fff;}
+/* badge y btn seguimiento */
+.badge-seg{display:inline-flex;align-items:center;gap:4px;background:#fff3cd;color:#7c4d00;border:1px solid #f59e0b;border-radius:20px;padding:2px 10px;font-size:.75rem;font-weight:700;}
+.btn-seg{background:#f59e0b;color:#fff;}
+/* historial seguimiento */
+.seg-entrada{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:9px 12px;margin-bottom:8px;}
+.seg-entrada-fecha{font-size:.75rem;color:#92400e;margin-bottom:4px;font-weight:600;}
+.seg-entrada-texto{font-size:.88rem;color:#1a1a1a;line-height:1.5;white-space:pre-wrap;}
+/* checkboxes especialidad psico */
+.psico-checks{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+.psico-checks label{display:flex;align-items:center;gap:6px;font-size:.87rem;cursor:pointer;background:#fff;border:1.5px solid #ddd;border-radius:8px;padding:6px 12px;transition:border-color .15s,background .15s;}
+.psico-checks label:has(input:checked){border-color:#7c3aed;background:#ede9fe;color:#5b21b6;font-weight:600;}
+.psico-checks input[type=checkbox]{accent-color:#7c3aed;width:16px;height:16px;}
 
 /* checkbox verificado en formulario */
 .verif-box{display:flex;align-items:flex-start;gap:10px;background:#fef9ec;border:1.5px solid var(--dorado);border-radius:10px;padding:12px 14px;margin:12px 0 10px;}
@@ -527,10 +539,11 @@ footer{
     <div id="det-body"></div>
     <div class="mfooter">
       <button class="btn btn-ghost"  id="det-cerrar2">Cerrar</button>
-      <button class="btn btn-proc"   id="det-proceso"  style="display:none;flex:0 0 auto">🔄 En proceso</button>
-      <button class="btn btn-help"   id="det-ayudar"   style="display:none">✓ Marcar ayudado</button>
+      <button class="btn btn-proc"   id="det-proceso"   style="display:none;flex:0 0 auto">🔄 En proceso</button>
+      <button class="btn btn-help"   id="det-ayudar"    style="display:none">✓ Marcar ayudado</button>
+      <button class="btn btn-seg"    id="det-seguimiento" style="display:none;flex:0 0 auto">🔔 Seguimiento</button>
       <button class="btn" id="det-editar"  style="display:none;background:#7c3aed;color:#fff;flex:0 0 auto">✏️ Editar</button>
-      <button class="btn btn-danger" id="det-eliminar" style="display:none;flex:0 0 auto">🗑 Eliminar</button>
+      <button class="btn btn-danger" id="det-eliminar"  style="display:none;flex:0 0 auto">🗑 Eliminar</button>
     </div>
   </div>
 </div>
@@ -567,6 +580,26 @@ footer{
 </div>
 
 <!-- MODAL: Login admin -->
+<!-- MODAL: Seguimiento -->
+<div class="mbg" id="mSeguimiento">
+  <div class="modal" style="max-width:500px">
+    <div class="mhdr">
+      <h3>🔔 Seguimiento</h3>
+      <button class="mbtn-close" id="seg-cerrarX">✕</button>
+    </div>
+    <!-- Historial de entradas -->
+    <div id="seg-historial" style="max-height:220px;overflow-y:auto;margin-bottom:14px;display:none"></div>
+    <!-- Nueva entrada -->
+    <label class="flbl">Nueva actualización de seguimiento</label>
+    <textarea class="minput" id="seg-texto" rows="3" placeholder="Ej: Se realizó primera sesión psicológica. Paciente estable, requiere seguimiento en 2 semanas..." style="resize:vertical;margin-bottom:10px"></textarea>
+    <div class="mrow">
+      <button class="btn btn-ghost"  id="seg-cancelar">Cerrar</button>
+      <button class="btn btn-ghost"  id="seg-toggle" style="flex:0 0 auto">⏸ Cerrar seguimiento</button>
+      <button class="btn btn-seg"    id="seg-agregar">+ Agregar progreso</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: En proceso -->
 <div class="mbg" id="mProceso">
   <div class="modal" style="max-width:420px">
@@ -645,10 +678,10 @@ footer{
           <label><input type="radio" name="edit-psico-urgencia" value="inmediata" /> 🔴 Inmediata</label>
           <label><input type="radio" name="edit-psico-urgencia" value="diferida"  /> 🟡 Puede esperar</label>
         </div>
-        <p class="psico-sub">Tipo de especialidad</p>
-        <div class="psico-opts">
-          <label><input type="radio" name="edit-psico-esp" value="psicologia"  /> 🧠 Psicología</label>
-          <label><input type="radio" name="edit-psico-esp" value="psiquiatria" /> 🏥 Psiquiatría</label>
+        <p class="psico-sub">Especialidad requerida (puede seleccionar ambas)</p>
+        <div class="psico-checks">
+          <label><input type="checkbox" id="edit-esp-psico" value="psicologia"  /> 🧠 Psicología</label>
+          <label><input type="checkbox" id="edit-esp-psi"   value="psiquiatria" /> 🏥 Psiquiatría</label>
         </div>
       </div>
     </div>
@@ -809,6 +842,7 @@ function render() {
           ${r.ayudado ? '<span class="badge-ok">✓ Ayudado</span>' : r.enProceso ? '<span class="badge-proc">🔄 En proceso</span>' : '<span class="badge-pend">Pendiente</span>'}
           ${r.verificado ? '<span class="badge-verif">✅ Verificado</span>' : '<span class="badge-no-verif">⚠️ Sin verificar</span>'}
           ${r.psicologia?.requiere ? '<span class="badge-psico">🧠 Psico</span>' : ''}
+          ${r.seguimiento?.activo  ? '<span class="badge-seg">🔔 Seguimiento</span>' : ''}
         </div>
       </div>
       ${badges ? `<div class="reg-comp">${badges}</div>` : ""}
@@ -856,7 +890,23 @@ window.abrirDetalle = id => {
     <div class="det-sec" style="border-left:3px solid #7c3aed;padding-left:10px">
       <h4 style="color:#5b21b6">🧠 Apoyo Psicológico</h4>
       <div class="det-row"><span class="ico">⏱️</span><span style="font-weight:600">Atención: ${r.psicologia.urgencia === "inmediata" ? "🔴 Inmediata" : "🟡 Puede esperar"}</span></div>
-      <div class="det-row"><span class="ico">🏥</span><span style="font-weight:600">Especialidad: ${r.psicologia.especialidad === "psiquiatria" ? "Psiquiatría (especializada)" : "Psicología"}</span></div>
+      ${(() => {
+        // compatibilidad: puede venir como array (nuevo) o string (viejo)
+        const esps = Array.isArray(r.psicologia.especialidades) && r.psicologia.especialidades.length
+          ? r.psicologia.especialidades
+          : (r.psicologia.especialidad ? [r.psicologia.especialidad] : []);
+        const labels = { psicologia:"🧠 Psicología", psiquiatria:"🏥 Psiquiatría" };
+        return esps.length ? `<div class="det-row"><span class="ico">🏥</span><span style="font-weight:600">Especialidad: ${esps.map(e => labels[e]||e).join(" + ")}</span></div>` : "";
+      })()}
+    </div>` : ""}
+    ${(r.seguimiento?.entradas?.length || r.seguimiento?.activo) ? `
+    <div class="det-sec" style="border-left:3px solid #f59e0b;padding-left:10px">
+      <h4 style="color:#7c4d00">🔔 Seguimiento ${r.seguimiento?.activo ? "activo" : "cerrado"} · ${(r.seguimiento?.entradas||[]).length} entrada(s)</h4>
+      ${(r.seguimiento?.entradas||[]).slice().reverse().map(e => `
+        <div class="seg-entrada">
+          <div class="seg-entrada-fecha">📅 ${fecha(e.creadoAt)}</div>
+          <div class="seg-entrada-texto">${esc(e.texto)}</div>
+        </div>`).join("")}
     </div>` : ""}
     <div class="det-sec">
       <h4>Estado del registro</h4>
@@ -885,6 +935,14 @@ window.abrirDetalle = id => {
   } else {
     btnPr.textContent = "🔄 En proceso";
     btnPr.className   = "btn btn-proc";
+  }
+  const btnSeg = $("det-seguimiento");
+  if (r.seguimiento?.activo) {
+    btnSeg.textContent = "🔔 Editar seguimiento";
+    btnSeg.className   = "btn btn-seg";
+  } else {
+    btnSeg.textContent = "🔔 Seguimiento";
+    btnSeg.className   = "btn btn-seg";
   }
 
   $("mDetalle").classList.add("open");
@@ -1091,6 +1149,80 @@ $("login-confirmar").addEventListener("click", async () => {
   }
 });
 
+// ── MODAL SEGUIMIENTO ───────────────────────────────────────
+let _segId = null;
+
+function renderHistorialSeg(r) {
+  const entradas = (r?.seguimiento?.entradas || []).slice().reverse();
+  const hist = $("seg-historial");
+  if (!entradas.length) { hist.style.display = "none"; return; }
+  hist.style.display = "block";
+  hist.innerHTML = entradas.map(e => `
+    <div class="seg-entrada">
+      <div class="seg-entrada-fecha">📅 ${fecha(e.creadoAt)}</div>
+      <div class="seg-entrada-texto">${esc(e.texto)}</div>
+    </div>`).join("");
+}
+
+function actualizarBtnToggleSeg(activo) {
+  const btn = $("seg-toggle");
+  btn.textContent = activo ? "⏸ Cerrar seguimiento" : "▶ Reabrir seguimiento";
+}
+
+$("det-seguimiento").addEventListener("click", () => {
+  const r = registros.find(x => x.id === _detId);
+  if (!r) return;
+  _segId = _detId;
+  $("seg-texto").value = "";
+  renderHistorialSeg(r);
+  actualizarBtnToggleSeg(r.seguimiento?.activo);
+  $("mDetalle").classList.remove("open");
+  $("mSeguimiento").classList.add("open");
+  setTimeout(() => $("seg-texto").focus(), 100);
+});
+
+const cerrarSegModal = () => { $("mSeguimiento").classList.remove("open"); _segId = null; };
+$("seg-cerrarX").addEventListener("click",  cerrarSegModal);
+$("seg-cancelar").addEventListener("click", cerrarSegModal);
+$("mSeguimiento").addEventListener("click", e => { if (e.target === $("mSeguimiento")) cerrarSegModal(); });
+
+$("seg-toggle").addEventListener("click", async () => {
+  if (!_segId) return;
+  const btn = $("seg-toggle");
+  btn.disabled = true;
+  await fetch(API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-admin-pass": adminPass || "" },
+    body: JSON.stringify({ action: "seguimiento_toggle", id: _segId }),
+  });
+  await cargar();
+  const r = registros.find(x => x.id === _segId);
+  actualizarBtnToggleSeg(r?.seguimiento?.activo);
+  btn.disabled = false;
+});
+
+$("seg-agregar").addEventListener("click", async () => {
+  if (!_segId) return;
+  const texto = $("seg-texto").value.trim();
+  if (!texto) { $("seg-texto").focus(); return; }
+  const btn = $("seg-agregar");
+  btn.disabled = true; btn.textContent = "Guardando...";
+  try {
+    await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-pass": adminPass || "" },
+      body: JSON.stringify({ action: "seguimiento_add", id: _segId, texto }),
+    });
+    $("seg-texto").value = "";
+    await cargar();
+    const r = registros.find(x => x.id === _segId);
+    renderHistorialSeg(r);
+    actualizarBtnToggleSeg(r?.seguimiento?.activo);
+  } finally {
+    btn.disabled = false; btn.textContent = "+ Agregar progreso";
+  }
+});
+
 // Toggle psicología en formulario principal
 $("psico-requiere").addEventListener("change", function() {
   $("psico-fields").classList.toggle("show", this.checked);
@@ -1104,10 +1236,11 @@ const _origAbrirDetalle = window.abrirDetalle;
 window.abrirDetalle = (id) => {
   _origAbrirDetalle(id);
   const adminVisible = esAdmin() ? "inline-flex" : "none";
-  $("det-proceso").style.display  = adminVisible;
-  $("det-ayudar").style.display   = adminVisible;
-  $("det-editar").style.display   = adminVisible;
-  $("det-eliminar").style.display = adminVisible;
+  $("det-proceso").style.display      = adminVisible;
+  $("det-ayudar").style.display       = adminVisible;
+  $("det-seguimiento").style.display  = adminVisible;
+  $("det-editar").style.display       = adminVisible;
+  $("det-eliminar").style.display     = adminVisible;
 };
 
 // Botón En proceso
@@ -1172,8 +1305,11 @@ $("det-editar").addEventListener("click", () => {
   document.getElementById("edit-psico-fields").classList.toggle("show", !!ep.requiere);
   const urg = document.querySelector(`input[name="edit-psico-urgencia"][value="${ep.urgencia||"diferida"}"]`);
   if (urg) urg.checked = true;
-  const esp = document.querySelector(`input[name="edit-psico-esp"][value="${ep.especialidad||"psicologia"}"]`);
-  if (esp) esp.checked = true;
+  // especialidades puede ser array (nuevo) o string (viejo)
+  const espsActuales = Array.isArray(ep.especialidades) ? ep.especialidades
+    : (ep.especialidad ? [ep.especialidad] : []);
+  $("edit-esp-psico").checked = espsActuales.includes("psicologia");
+  $("edit-esp-psi").checked   = espsActuales.includes("psiquiatria");
   $("edit-msg").className = "msg";
   $("mEditar").classList.add("open");
   _editId = _detId;
@@ -1204,9 +1340,9 @@ $("edit-guardar").addEventListener("click", async () => {
         notas:       $("edit-notas").value,
         verificado:  $("edit-verificado").checked,
         psicologia: {
-          requiere:     $("edit-psico-requiere").checked,
-          urgencia:     document.querySelector('input[name="edit-psico-urgencia"]:checked')?.value || "diferida",
-          especialidad: document.querySelector('input[name="edit-psico-esp"]:checked')?.value       || "psicologia",
+          requiere:       $("edit-psico-requiere").checked,
+          urgencia:       document.querySelector('input[name="edit-psico-urgencia"]:checked')?.value || "diferida",
+          especialidades: [$("edit-esp-psico").checked && "psicologia", $("edit-esp-psi").checked && "psiquiatria"].filter(Boolean),
         },
       }),
     });

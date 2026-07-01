@@ -11,6 +11,15 @@ const json = (data, status = 200) =>
 
 const isAdmin = (req) => req.headers.get("x-admin-pass") === ADMIN_PASS;
 
+const ESPECIALIDADES_VALIDAS = ["psicologia", "psiquiatria"];
+
+function parsarEspecialidades(val) {
+  if (Array.isArray(val)) return val.filter(v => ESPECIALIDADES_VALIDAS.includes(v));
+  // compatibilidad con registros viejos que tenían string
+  if (typeof val === "string" && ESPECIALIDADES_VALIDAS.includes(val)) return [val];
+  return [];
+}
+
 async function leer(store) {
   const data = await store.get(KEY, { type: "json" }).catch(() => null);
   return Array.isArray(data) ? data : [];
@@ -46,30 +55,32 @@ export default async (req) => {
         adolescentes: Math.max(0, Number(comp.adolescentes) || 0),
       };
       const psico = body.psicologia && typeof body.psicologia === "object" ? {
-        requiere:     body.psicologia.requiere === true,
-        urgencia:     ["inmediata","diferida"].includes(body.psicologia.urgencia) ? body.psicologia.urgencia : "diferida",
-        especialidad: ["psicologia","psiquiatria"].includes(body.psicologia.especialidad) ? body.psicologia.especialidad : "psicologia",
-      } : { requiere: false, urgencia: "diferida", especialidad: "psicologia" };
+        requiere:      body.psicologia.requiere === true,
+        urgencia:      ["inmediata","diferida"].includes(body.psicologia.urgencia) ? body.psicologia.urgencia : "diferida",
+        especialidades: parsarEspecialidades(body.psicologia.especialidades ?? body.psicologia.especialidad),
+      } : { requiere: false, urgencia: "diferida", especialidades: [] };
+
       const nuevo = {
-        id:            crypto.randomUUID(),
-        nombre:        String(body.nombre).trim(),
+        id:             crypto.randomUUID(),
+        nombre:         String(body.nombre).trim(),
         composicion,
-        personas:      Object.values(composicion).reduce((a, v) => a + v, 0),
-        telefono:      String(body.telefono  || "").trim(),
-        edades:        String(body.edades    || "").trim(),
-        destino:       String(body.destino   || "").trim(),
-        necesidades:   Array.isArray(body.necesidades) ? body.necesidades : [],
-        notas:         String(body.notas     || "").trim(),
-        verificado:    body.verificado === true,
-        psicologia:    psico,
-        enProceso:     false,
-        enProcesoNotas:"",
-        enProcesoBy:   "",
-        enProcesoAt:   null,
-        ayudado:       false,
-        ayudadoPor:    "",
-        ayudadoAt:     null,
-        createdAt:     Date.now(),
+        personas:       Object.values(composicion).reduce((a, v) => a + v, 0),
+        telefono:       String(body.telefono  || "").trim(),
+        edades:         String(body.edades    || "").trim(),
+        destino:        String(body.destino   || "").trim(),
+        necesidades:    Array.isArray(body.necesidades) ? body.necesidades : [],
+        notas:          String(body.notas     || "").trim(),
+        verificado:     body.verificado === true,
+        psicologia:     psico,
+        seguimiento:    { activo: false, entradas: [] },
+        enProceso:      false,
+        enProcesoNotas: "",
+        enProcesoBy:    "",
+        enProcesoAt:    null,
+        ayudado:        false,
+        ayudadoPor:     "",
+        ayudadoAt:      null,
+        createdAt:      Date.now(),
       };
       registros.push(nuevo);
       await guardar(store, registros);
@@ -104,6 +115,35 @@ export default async (req) => {
       return json(r);
     }
 
+    // AGREGAR ENTRADA DE SEGUIMIENTO — solo admin
+    if (body.action === "seguimiento_add") {
+      if (!isAdmin(req)) return json({ error: "No autorizado" }, 403);
+      const idx = registros.findIndex(r => r.id === body.id);
+      if (idx === -1) return json({ error: "No encontrado" }, 404);
+      const texto = String(body.texto || "").trim();
+      if (!texto) return json({ error: "El texto es obligatorio" }, 400);
+      const r = registros[idx];
+      if (!r.seguimiento || !Array.isArray(r.seguimiento.entradas)) {
+        r.seguimiento = { activo: true, entradas: [] };
+      }
+      r.seguimiento.activo = true;
+      r.seguimiento.entradas.push({ texto, creadoAt: Date.now() });
+      await guardar(store, registros);
+      return json(r);
+    }
+
+    // CERRAR / REABRIR SEGUIMIENTO — solo admin
+    if (body.action === "seguimiento_toggle") {
+      if (!isAdmin(req)) return json({ error: "No autorizado" }, 403);
+      const idx = registros.findIndex(r => r.id === body.id);
+      if (idx === -1) return json({ error: "No encontrado" }, 404);
+      const r = registros[idx];
+      if (!r.seguimiento) r.seguimiento = { activo: false, entradas: [] };
+      r.seguimiento.activo = !r.seguimiento.activo;
+      await guardar(store, registros);
+      return json(r);
+    }
+
     // VERIFICAR CONTRASEÑA — para login del cliente
     if (body.action === "verify") {
       if (!isAdmin(req)) return json({ error: "No autorizado" }, 403);
@@ -124,10 +164,10 @@ export default async (req) => {
       if (body.notas       !== undefined) r.notas       = String(body.notas).trim();
       if (body.verificado  !== undefined) r.verificado  = body.verificado === true;
       if (body.psicologia  !== undefined && typeof body.psicologia === "object") {
-        if (!r.psicologia) r.psicologia = { requiere: false, urgencia: "diferida", especialidad: "psicologia" };
-        if (body.psicologia.requiere     !== undefined) r.psicologia.requiere     = body.psicologia.requiere === true;
-        if (body.psicologia.urgencia     !== undefined) r.psicologia.urgencia     = ["inmediata","diferida"].includes(body.psicologia.urgencia) ? body.psicologia.urgencia : "diferida";
-        if (body.psicologia.especialidad !== undefined) r.psicologia.especialidad = ["psicologia","psiquiatria"].includes(body.psicologia.especialidad) ? body.psicologia.especialidad : "psicologia";
+        if (!r.psicologia) r.psicologia = { requiere: false, urgencia: "diferida", especialidades: [] };
+        if (body.psicologia.requiere      !== undefined) r.psicologia.requiere      = body.psicologia.requiere === true;
+        if (body.psicologia.urgencia      !== undefined) r.psicologia.urgencia      = ["inmediata","diferida"].includes(body.psicologia.urgencia) ? body.psicologia.urgencia : "diferida";
+        if (body.psicologia.especialidades !== undefined) r.psicologia.especialidades = parsarEspecialidades(body.psicologia.especialidades);
       }
       await guardar(store, registros);
       return json(r);
